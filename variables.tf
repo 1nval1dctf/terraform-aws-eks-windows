@@ -46,8 +46,14 @@ variable "eks_autoscaling_group_linux_max_size" {
   type        = number
 }
 
-variable "eks_instance_type" {
-  description = "Instance size for EKS worker nodes."
+variable "eks_linux_instance_type" {
+  description = "Instance size for EKS linux worker nodes."
+  default     = "m5.large"
+  type        = string
+}
+
+variable "eks_windows_instance_type" {
+  description = "Instance size for EKS windows worker nodes."
   default     = "m5.large"
   type        = string
 }
@@ -71,9 +77,15 @@ variable "eks_autoscaling_group_windows_max_size" {
   type        = number
 }
 
+variable "eks_windows_disk_size" {
+  description = "Disk size of the windows nodes"
+  default     = 150
+  type        = number
+}
+
 variable "external_dns_support" {
   type        = bool
-  description = "Setup IAM, service accoutn and cluster role for external_dns in EKS"
+  description = "Setup IAM, service accounts and cluster role for external_dns in EKS"
   default     = false
 }
 
@@ -105,4 +117,27 @@ variable "windows_ami_type" {
   description = "AMI type for the Windows Nodes."
   default     = "WINDOWS_CORE_2022_x86_64"
   type        = string
+}
+
+variable "vpc_cidr_block" {
+  type        = string
+  description = "The top-level CIDR block for the VPC."
+  default     = "10.0.0.0/16"
+}
+
+variable "vpc_cidr_private_subnets" {
+  type        = list(string)
+  description = "private subnets in the main CIDR block for the VPC."
+  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+}
+
+variable "vpc_cidr_public_subnets" {
+  type        = list(string)
+  description = "private subnets in the main CIDR block for the VPC."
+  default     = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+}
+
+variable "eks_windows_key_pair_name" {
+  type        = string
+  description = "security key pair to apply to the windows nodes"
 }

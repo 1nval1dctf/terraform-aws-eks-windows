@@ -7,13 +7,15 @@ terraform {
     }
   }
 }
+//ref https://github.com/terraform-aws-modules/terraform-aws-eks/blob/v19.14.0/examples/eks_managed_node_group/main.tf
 
+# put all nodes in private subnets #concat(var.private_subnet_ids, var.public_subnet_ids)
 module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
   version                        = "19.10.3"
   cluster_name                   = var.eks_cluster_name
   cluster_version                = var.eks_cluster_version
-  subnet_ids                     = concat(var.private_subnet_ids, var.public_subnet_ids)
+  subnet_ids                     = var.private_subnet_ids 
   vpc_id                         = var.vpc_id
   cluster_endpoint_public_access = true
   aws_auth_users                 = var.eks_users
@@ -28,7 +30,7 @@ module "eks" {
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
 
-      instance_types = [var.eks_instance_type]
+      instance_types = [var.eks_linux_instance_type]
 
       min_size     = var.eks_autoscaling_group_linux_min_size
       max_size     = var.eks_autoscaling_group_linux_max_size
@@ -43,11 +45,20 @@ module "eks" {
         "k8s.io/cluster-autoscaler/enabled"                 = "true",
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
-      instance_types = [var.eks_instance_type]
+      instance_types = [var.eks_windows_instance_type]
 
       min_size     = var.eks_autoscaling_group_windows_min_size
       max_size     = var.eks_autoscaling_group_windows_max_size
       desired_size = var.eks_autoscaling_group_windows_desired_capacity
+      disk_size = var.eks_windows_disk_size
+      remote_access = {
+        ec2_ssh_key               = var.eks_windows_key_pair_name
+#        source_security_group_ids = [var.e.remote_access.id]
+      }
+      iam_role_additional_policies = {
+        AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"
+      }
     }
   }
   cluster_addons = {

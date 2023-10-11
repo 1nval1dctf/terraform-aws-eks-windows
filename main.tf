@@ -19,6 +19,9 @@ terraform {
 module "vpc" {
   source           = "./modules/vpc"
   eks_cluster_name = var.eks_cluster_name
+  vpc_cidr_block = var.vpc_cidr_block
+  vpc_cidr_private_subnets = var.vpc_cidr_private_subnets
+  vpc_cidr_public_subnets = var.vpc_cidr_public_subnets
 }
 
 module "eks" {
@@ -32,11 +35,14 @@ module "eks" {
   eks_autoscaling_group_linux_min_size           = var.eks_autoscaling_group_linux_min_size
   eks_autoscaling_group_linux_desired_capacity   = var.eks_autoscaling_group_linux_desired_capacity
   eks_autoscaling_group_linux_max_size           = var.eks_autoscaling_group_linux_max_size
-  eks_instance_type                              = var.eks_instance_type
+  eks_windows_instance_type                      = var.eks_windows_instance_type
+  eks_linux_instance_type                        = var.eks_linux_instance_type
   eks_autoscaling_group_windows_min_size         = var.eks_autoscaling_group_windows_min_size
   eks_autoscaling_group_windows_desired_capacity = var.eks_autoscaling_group_windows_desired_capacity
   eks_autoscaling_group_windows_max_size         = var.eks_autoscaling_group_windows_max_size
   windows_ami_type                               = var.windows_ami_type
+  eks_windows_key_pair_name                      = var.eks_windows_key_pair_name
+  eks_windows_disk_size                          = var.eks_windows_disk_size
 }
 module "eks_extras" {
   source                        = "./modules/eks-extras"

@@ -9,13 +9,13 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
     effect = "Allow"
 
     actions = [
-      "autoscaling:DescribeAutoScalingGroups",
       "autoscaling:DescribeAutoScalingInstances",
-      "autoscaling:DescribeLaunchConfigurations",
-      "autoscaling:DescribeScalingActivities",
-      "autoscaling:DescribeTags",
-      "ec2:DescribeInstanceTypes",
+      "autoscaling:DescribeAutoScalingGroups",
       "ec2:DescribeLaunchTemplateVersions",
+      "autoscaling:DescribeTags",
+      "autoscaling:DescribeLaunchConfigurations",
+      "ec2:DescribeInstanceTypes",
+      "autoscaling:DescribeScalingActivities"
     ]
 
     resources = ["*"]
@@ -28,9 +28,6 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
     actions = [
       "autoscaling:SetDesiredCapacity",
       "autoscaling:TerminateInstanceInAutoScalingGroup",
-      "ec2:DescribeImages",
-      "ec2:GetInstanceTypesFromInstanceRequirements",
-      "eks:DescribeNodegroup"
     ]
 
     resources = ["*"]
@@ -71,9 +68,18 @@ resource "helm_release" "cluster_autoscaler" {
   namespace  = "kube-system"
 
   set {
+    name  = "image.tag"
+    value = "v1.26.2"
+  }
+  set {
+    name  = "image.pullPolicy"
+    value = "Always"
+  }
+  set {
     name  = "autoDiscovery.enabled"
     value = "true"
   }
+
   set {
     name  = "autoDiscovery.clusterName"
     value = var.eks_cluster_name
