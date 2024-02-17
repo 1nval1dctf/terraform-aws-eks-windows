@@ -18,7 +18,6 @@ output "eks_cluster_name" {
   value       = module.eks.cluster_name
   description = "EKS cluster ID"
   depends_on = [
-    module.eks,
     module.eks_extras
   ]
 }
@@ -27,7 +26,6 @@ output "eks_cluster_endpoint" {
   value       = module.eks.cluster_endpoint
   description = "EKS cluster endpoint"
   depends_on = [
-    module.eks,
     module.eks_extras
   ]
 }
@@ -35,7 +33,6 @@ output "eks_cluster_certificate_authority_data" {
   value       = module.eks.cluster_certificate_authority_data
   description = "EKS cluster CA"
   depends_on = [
-    module.eks,
     module.eks_extras
   ]
 }
