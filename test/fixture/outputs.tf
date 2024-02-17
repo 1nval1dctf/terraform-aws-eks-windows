@@ -30,3 +30,12 @@ output "kubeconfig" {
   value       = module.test.kubeconfig
   description = "kubeconfig for the AWS EKS cluster"
 }
+
+output "windows" {
+  value       = kubernetes_service.windows.status[0].load_balancer[0].ingress[0].hostname
+  description = "hostname for windows based web server"
+}
+output "linux" {
+  value       = kubernetes_service.nginx.status[0].load_balancer[0].ingress[0].hostname
+  description = "hostname for linux based web server"
+}

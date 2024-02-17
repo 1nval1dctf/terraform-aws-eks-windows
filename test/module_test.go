@@ -1,12 +1,16 @@
 package test
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
+	dns_helper "github.com/gruntwork-io/terratest/modules/dns-helper"
+	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
@@ -157,6 +161,49 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error failed to get windows service: %v\n", err)
 		}
+
+	})
+
+	// Check the Frontend
+	test_structure.RunTestStage(t, "validate_frontend", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, fixtureFolder)
+
+		// Frontend
+		windows := terraform.Output(t, terraformOptions, "windows")
+		windowsHttp := "http://" + windows
+		linux := terraform.Output(t, terraformOptions, "linux")
+		linuxHttp := "http://" + linux
+
+		// Setup a TLS configuration to submit with the helper, a blank struct is acceptable
+		maxRetries := 60
+		timeBetweenRetries := 10 * time.Second
+		tlsConfig := tls.Config{}
+
+		dnsQuery := dns_helper.DNSQuery{Type: "A", Name: linux}
+		_, err := dns_helper.DNSLookupAuthoritativeAllWithRetryE(t, dnsQuery, nil, maxRetries, timeBetweenRetries)
+		if err != nil {
+			t.Errorf("DNS for %s not propagated in time. Error: %v\n", linux, err)
+		}
+
+		dnsQuery = dns_helper.DNSQuery{Type: "A", Name: windows}
+		_, err = dns_helper.DNSLookupAuthoritativeAllWithRetryE(t, dnsQuery, nil, maxRetries, timeBetweenRetries)
+		if err != nil {
+			t.Errorf("DNS for %s not propagated in time. Error: %v\n", windows, err)
+		}
+
+		// once dns is propagates the service should ought to be up so don't wait or try as much.
+		maxRetries = 10
+		timeBetweenRetries = 5 * time.Second
+
+		// Verify that we get back a 200 OK that contains correct text
+		http_helper.HttpGetWithRetryWithCustomValidation(t, linuxHttp, &tlsConfig, maxRetries, timeBetweenRetries, func(statusCode int, body string) bool {
+			return (statusCode == 200) && strings.Contains(body, "nginx web server is successfully installed")
+		})
+
+		// Verify that we get back a 200 OK that contains correct text
+		http_helper.HttpGetWithRetryWithCustomValidation(t, windowsHttp, &tlsConfig, maxRetries, timeBetweenRetries, func(statusCode int, body string) bool {
+			return (statusCode == 200) && strings.Contains(body, "IIS Windows Server")
+		})
 
 	})
 
