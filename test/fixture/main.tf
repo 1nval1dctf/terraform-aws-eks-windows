@@ -1,17 +1,13 @@
 terraform {
-  required_version = ">= 1.4.5"
+  required_version = ">= 1.7.3"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.60.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "2.9.0"
+      version = "5.37.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.19.0"
+      version = "2.25.2"
     }
   }
 }
@@ -34,19 +30,6 @@ provider "kubernetes" {
     command     = "aws"
     # This requires the awscli to be installed locally where Terraform is executed
     args = ["eks", "get-token", "--cluster-name", module.test.eks_cluster_name]
-  }
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = module.test.eks_cluster_endpoint
-    cluster_ca_certificate = base64decode(module.test.eks_cluster_certificate_authority_data)
-    exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      command     = "aws"
-      # This requires the awscli to be installed locally where Terraform is executed
-      args = ["eks", "get-token", "--cluster-name", module.test.eks_cluster_name]
-    }
   }
 }
 
@@ -115,6 +98,11 @@ resource "kubernetes_deployment" "nginx" {
 resource "kubernetes_service" "nginx" {
   metadata {
     name = "nginx"
+    annotations = {
+      "service.beta.kubernetes.io/aws-load-balancer-type"            = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type" = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"          = "internet-facing"
+    }
   }
   spec {
     selector = {
@@ -124,8 +112,8 @@ resource "kubernetes_service" "nginx" {
       port        = 80
       target_port = 80
     }
-
-    type = "LoadBalancer"
+    type                = "LoadBalancer"
+    load_balancer_class = "service.k8s.aws/nlb"
   }
 }
 
@@ -205,6 +193,11 @@ resource "kubernetes_service" "windows" {
   metadata {
     name      = "windows"
     namespace = "default"
+    annotations = {
+      "service.beta.kubernetes.io/aws-load-balancer-type"            = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type" = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"          = "internet-facing"
+    }
   }
   spec {
     selector = {
@@ -214,6 +207,7 @@ resource "kubernetes_service" "windows" {
       port        = 80
       target_port = 80
     }
-    type = "LoadBalancer"
+    type                = "LoadBalancer"
+    load_balancer_class = "service.k8s.aws/nlb"
   }
 }
