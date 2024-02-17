@@ -1,15 +1,11 @@
 config {
   module = false
   disabled_by_default = false
-  variables = [
-    "create_eks=true",
-    "create_cdn=true"
-    ]
 }
 
 plugin "aws" {
   enabled = true
-  version = "0.22.1"
+  version = "0.30.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
