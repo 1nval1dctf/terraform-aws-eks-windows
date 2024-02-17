@@ -5,10 +5,11 @@
 #### Golang
 
 ```bash
-wget https://dl.google.com/go/go1.19.5.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.19.5.linux-amd64.tar.gz
-rm go1.19.5.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.22.0.darwin-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.22.0.darwin-amd64.tar.gz
+rm go1.22.0.darwin-amd64.tar.gz
 ```
+Add /usr/local/go/bin to the PATH environment variable
 
 #### Terraform
 

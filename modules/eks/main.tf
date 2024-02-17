@@ -1,22 +1,25 @@
 terraform {
-  required_version = ">= 1.4.5"
+  required_version = ">= 1.7.3"
   required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.19.0"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.37.0"
     }
   }
 }
 
 module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
-  version                        = "19.10.3"
+  version                        = "20.2.1"
   cluster_name                   = var.eks_cluster_name
   cluster_version                = var.eks_cluster_version
   subnet_ids                     = concat(var.private_subnet_ids, var.public_subnet_ids)
   vpc_id                         = var.vpc_id
   cluster_endpoint_public_access = true
-  aws_auth_users                 = var.eks_users
+
+  # Give the Terraform identity admin access to the cluster
+  # which will allow resources to be deployed into the cluster
+  enable_cluster_creator_admin_permissions = true
 
   eks_managed_node_groups = {
     linux = {
@@ -51,9 +54,15 @@ module "eks" {
     }
   }
   cluster_addons = {
-    kube-proxy = {}
-    vpc-cni    = {}
-    coredns    = {}
+    kube-proxy = {
+      most_recent = true
+    }
+    vpc-cni = {
+      most_recent = true
+    }
+    coredns = {
+      most_recent = true
+    }
   }
   cluster_enabled_log_types = [
     "api",
@@ -63,13 +72,14 @@ module "eks" {
     "scheduler"
   ]
 }
-
-resource "kubernetes_config_map_v1" "vpc_resource_controller" {
-  metadata {
-    name      = "amazon-vpc-cni"
-    namespace = "kube-system"
+resource "aws_eks_access_entry" "user_access" {
+  for_each = {
+    for index, user in var.eks_users :
+    user.username => user
   }
-  data = {
-    enable-windows-ipam = true
-  }
+  cluster_name      = var.eks_cluster_name
+  principal_arn     = each.value.userarn
+  kubernetes_groups = each.value.groups
+  type              = "STANDARD"
+  user_name         = each.value.username
 }

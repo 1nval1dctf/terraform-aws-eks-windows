@@ -13,7 +13,7 @@ variable "aws_region" {
 variable "eks_cluster_version" {
   type        = string
   description = "Kubernetes version for the EKS cluster"
-  default     = "1.26"
+  default     = "1.29"
 }
 
 variable "eks_users" {

@@ -1,6 +1,6 @@
 # see https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
 
-# from: https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.7/docs/install/iam_policy.json
+# from: https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
 data "aws_iam_policy_document" "aws_lb" {
   #checkov:skip=CKV_AWS_109:Ensure IAM policies does not allow permissions management / resource exposure without constraints
   #checkov:skip=CKV_AWS_111:Ensure IAM policies does not allow write access without constraints
@@ -75,6 +75,7 @@ data "aws_iam_policy_document" "aws_lb" {
       "shield:GetSubscriptionState",
       "shield:DescribeProtection",
       "shield:CreateProtection",
+      "shield:DeleteProtection",
     ]
   }
 
@@ -233,6 +234,29 @@ data "aws_iam_policy_document" "aws_lb" {
   }
 
   statement {
+    sid       = ""
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "elasticloadbalancing:ModifyLoadBalancerAttributes",
+      "elasticloadbalancing:SetIpAddressType",
+      "elasticloadbalancing:SetSecurityGroups",
+      "elasticloadbalancing:SetSubnets",
+      "elasticloadbalancing:DeleteLoadBalancer",
+      "elasticloadbalancing:ModifyTargetGroup",
+      "elasticloadbalancing:ModifyTargetGroupAttributes",
+      "elasticloadbalancing:DeleteTargetGroup",
+    ]
+
+    condition {
+      test     = "Null"
+      variable = "aws:ResourceTag/elbv2.k8s.aws/cluster"
+      values   = ["false"]
+    }
+  }
+
+  statement {
     sid    = ""
     effect = "Allow"
 
@@ -258,29 +282,6 @@ data "aws_iam_policy_document" "aws_lb" {
     condition {
       test     = "Null"
       variable = "aws:RequestTag/elbv2.k8s.aws/cluster"
-      values   = ["false"]
-    }
-  }
-
-  statement {
-    sid       = ""
-    effect    = "Allow"
-    resources = ["*"]
-
-    actions = [
-      "elasticloadbalancing:ModifyLoadBalancerAttributes",
-      "elasticloadbalancing:SetIpAddressType",
-      "elasticloadbalancing:SetSecurityGroups",
-      "elasticloadbalancing:SetSubnets",
-      "elasticloadbalancing:DeleteLoadBalancer",
-      "elasticloadbalancing:ModifyTargetGroup",
-      "elasticloadbalancing:ModifyTargetGroupAttributes",
-      "elasticloadbalancing:DeleteTargetGroup",
-    ]
-
-    condition {
-      test     = "Null"
-      variable = "aws:ResourceTag/elbv2.k8s.aws/cluster"
       values   = ["false"]
     }
   }
