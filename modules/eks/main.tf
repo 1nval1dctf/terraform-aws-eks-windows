@@ -32,10 +32,9 @@ module "eks" {
       }
 
       instance_types = [var.eks_instance_type]
-
-      min_size     = var.eks_autoscaling_group_linux_min_size
-      max_size     = var.eks_autoscaling_group_linux_max_size
-      desired_size = var.eks_autoscaling_group_linux_desired_capacity
+      min_size       = var.eks_autoscaling_group_linux_min_size
+      max_size       = var.eks_autoscaling_group_linux_max_size
+      desired_size   = var.eks_autoscaling_group_linux_desired_capacity
     }
     windows = {
       # By default, the module creates a launch template to ensure tags are propagated to instances, etc.,
@@ -47,10 +46,9 @@ module "eks" {
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
       instance_types = [var.eks_instance_type]
-
-      min_size     = var.eks_autoscaling_group_windows_min_size
-      max_size     = var.eks_autoscaling_group_windows_max_size
-      desired_size = var.eks_autoscaling_group_windows_desired_capacity
+      min_size       = var.eks_autoscaling_group_windows_min_size
+      max_size       = var.eks_autoscaling_group_windows_max_size
+      desired_size   = var.eks_autoscaling_group_windows_desired_capacity
     }
   }
   cluster_addons = {

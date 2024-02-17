@@ -138,8 +138,7 @@ resource "kubernetes_deployment" "windows" {
       }
       spec {
         container {
-          image = "mcr.microsoft.com/windows/servercore/iis:latest"
-
+          image             = "mcr.microsoft.com/windows/servercore/iis:latest"
           name              = "windows"
           image_pull_policy = "Always"
           port {
