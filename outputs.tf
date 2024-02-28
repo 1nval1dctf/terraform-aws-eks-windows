@@ -36,7 +36,8 @@ output "eks_cluster_certificate_authority_data" {
     module.eks_extras
   ]
 }
+
 output "kubeconfig" {
-  value       = local.kubeconfig
+  value       = module.eks.kubeconfig
   description = "kubeconfig for the AWS EKS cluster"
 }

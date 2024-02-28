@@ -30,3 +30,8 @@ output "windows_node_group_iam_role" {
   description = "IAM role name for windows EKS managed node group"
   value       = module.eks.eks_managed_node_groups["windows"].iam_role_name
 }
+
+output "kubeconfig" {
+  value       = local.kubeconfig
+  description = "kubeconfig for the AWS EKS cluster"
+}

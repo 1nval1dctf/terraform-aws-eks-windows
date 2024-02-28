@@ -79,7 +79,7 @@ variable "eks_windows_instance_type" {
 
 variable "external_dns_support" {
   type        = bool
-  description = "Setup IAM, service accoutn and cluster role for external_dns in EKS"
+  description = "Setup IAM, service accounts and cluster role for external_dns in EKS"
   default     = false
 }
 
