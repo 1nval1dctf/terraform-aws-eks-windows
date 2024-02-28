@@ -10,9 +10,9 @@ Terraform module to deploy EKS with Windows support
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.37.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.38 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.12.1 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.25.2 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.26.0 |
 ## Providers
 
 No providers.
@@ -58,7 +58,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.37.0"
+      version = ">= 5.38"
     }
   }
 }

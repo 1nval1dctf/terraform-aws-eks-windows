@@ -3,14 +3,14 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.37.0"
+      version = ">= 5.38"
     }
   }
 }
 
 module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
-  version                        = "20.2.1"
+  version                        = "20.4.0"
   cluster_name                   = var.eks_cluster_name
   cluster_version                = var.eks_cluster_version
   subnet_ids                     = concat(var.private_subnet_ids, var.public_subnet_ids)
