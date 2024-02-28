@@ -18,8 +18,8 @@ module "vpc" {
   name                                 = "${var.eks_cluster_name}-vpc"
   cidr                                 = var.vpc_cidr_block
   azs                                  = data.aws_availability_zones.available.names
-  private_subnets                      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets                       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+  private_subnets                      = var.vpc_cidr_private_subnets
+  public_subnets                       = var.vpc_cidr_public_subnets
   enable_dns_hostnames                 = true
   enable_dns_support                   = true
   enable_nat_gateway                   = true

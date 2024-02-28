@@ -17,8 +17,10 @@ terraform {
 }
 
 module "vpc" {
-  source           = "./modules/vpc"
-  eks_cluster_name = var.eks_cluster_name
+  source                   = "./modules/vpc"
+  eks_cluster_name         = var.eks_cluster_name
+  vpc_cidr_private_subnets = var.vpc_cidr_private_subnets
+  vpc_cidr_public_subnets  = var.vpc_cidr_public_subnets
 }
 
 module "eks" {
