@@ -25,6 +25,7 @@ module "eks" {
   eks_cluster_name                               = var.eks_cluster_name
   source                                         = "./modules/eks"
   vpc_id                                         = module.vpc.vpc_id
+  aws_region                                     = var.aws_region
   private_subnet_ids                             = module.vpc.private_subnet_ids
   public_subnet_ids                              = module.vpc.public_subnet_ids
   eks_users                                      = var.eks_users
@@ -32,12 +33,14 @@ module "eks" {
   eks_autoscaling_group_linux_min_size           = var.eks_autoscaling_group_linux_min_size
   eks_autoscaling_group_linux_desired_capacity   = var.eks_autoscaling_group_linux_desired_capacity
   eks_autoscaling_group_linux_max_size           = var.eks_autoscaling_group_linux_max_size
-  eks_instance_type                              = var.eks_instance_type
+  eks_linux_instance_type                        = var.eks_linux_instance_type
   eks_autoscaling_group_windows_min_size         = var.eks_autoscaling_group_windows_min_size
   eks_autoscaling_group_windows_desired_capacity = var.eks_autoscaling_group_windows_desired_capacity
   eks_autoscaling_group_windows_max_size         = var.eks_autoscaling_group_windows_max_size
+  eks_windows_instance_type                      = var.eks_windows_instance_type
   windows_ami_type                               = var.windows_ami_type
 }
+
 module "eks_extras" {
   source                        = "./modules/eks-extras"
   eks_cluster_name              = module.eks.cluster_name

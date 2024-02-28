@@ -31,7 +31,7 @@ module "eks" {
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
 
-      instance_types = [var.eks_instance_type]
+      instance_types = [var.eks_linux_instance_type]
       min_size       = var.eks_autoscaling_group_linux_min_size
       max_size       = var.eks_autoscaling_group_linux_max_size
       desired_size   = var.eks_autoscaling_group_linux_desired_capacity
@@ -45,7 +45,7 @@ module "eks" {
         "k8s.io/cluster-autoscaler/enabled"                 = "true",
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
-      instance_types = [var.eks_instance_type]
+      instance_types = [var.eks_windows_instance_type]
       min_size       = var.eks_autoscaling_group_windows_min_size
       max_size       = var.eks_autoscaling_group_windows_max_size
       desired_size   = var.eks_autoscaling_group_windows_desired_capacity

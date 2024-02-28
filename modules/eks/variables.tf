@@ -4,6 +4,12 @@ variable "vpc_id" {
   default     = null
 }
 
+variable "aws_region" {
+  type        = string
+  description = "Region to deploy EKS Cluster into"
+  default     = "us-east-1"
+}
+
 variable "private_subnet_ids" {
   type        = list(string)
   description = "List of private subnet ids"
@@ -56,13 +62,13 @@ variable "eks_autoscaling_group_linux_max_size" {
   type        = number
 }
 
-variable "eks_instance_type" {
+variable "eks_linux_instance_type" {
   description = "Instance size for EKS worker nodes."
   default     = "m5.large"
   type        = string
 }
 
-# # eks autoscaling for windows
+# eks autoscaling for windows
 variable "eks_autoscaling_group_windows_min_size" {
   description = "Minimum number of Windows nodes for the EKS"
   default     = 1
@@ -81,6 +87,11 @@ variable "eks_autoscaling_group_windows_max_size" {
   type        = number
 }
 
+variable "eks_windows_instance_type" {
+  description = "Instance size for EKS worker nodes."
+  default     = "m5.large"
+  type        = string
+}
 
 variable "windows_ami_type" {
   description = "AMI type for the Windows Nodes."
