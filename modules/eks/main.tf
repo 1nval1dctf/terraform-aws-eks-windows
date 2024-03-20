@@ -75,9 +75,29 @@ resource "aws_eks_access_entry" "user_access" {
     for index, user in var.eks_users :
     user.username => user
   }
-  cluster_name      = var.eks_cluster_name
+  cluster_name      = module.eks.cluster_name
   principal_arn     = each.value.userarn
   kubernetes_groups = each.value.groups
   type              = "STANDARD"
   user_name         = each.value.username
+}
+
+resource "aws_eks_access_policy_association" "user_access_policy_association" {
+
+  for_each = {
+    for index, user in var.eks_users :
+    user.username => user
+  }
+  access_scope {
+    type = "cluster"
+  }
+
+  cluster_name = module.eks.cluster_name
+
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = each.value.userarn
+
+  depends_on = [
+    aws_eks_access_entry.user_access,
+  ]
 }
