@@ -46,3 +46,8 @@ output "load_balancer_controller_helm_release_version" {
   description = "Load Balancer controller helm release version. Depend on this in your kubernetes deployments if you use services with load balacers and want to be able to destroy from a single terraform deploymemt"
   value       = module.eks_extras.load_balancer_controller_helm_release_version
 }
+
+output "network_polices_enabled" {
+  value       = module.cni.network_polices_enabled
+  description = "Denotes if network policies where enabled"
+}

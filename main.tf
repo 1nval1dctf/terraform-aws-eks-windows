@@ -63,4 +63,18 @@ module "eks_extras" {
     module.eks,
     module.vpc
   ]
+
+}
+module "cni" {
+  source                        = "./modules/cni"
+  eks_cluster_name              = module.eks.cluster_name
+  kubeconfig                    = module.eks.kubeconfig
+  enable_calico_network_polices = var.enable_calico_network_polices
+  vpc_cni_addon                 = module.eks.vpc_cni_addon
+  kube_proxy_addon              = module.eks.kube_proxy_addon
+
+  depends_on = [
+    module.vpc,
+    module.eks_extras
+  ]
 }

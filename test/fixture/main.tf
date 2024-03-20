@@ -17,8 +17,9 @@ provider "aws" {
 }
 
 module "test" {
-  source               = "../../"
-  external_dns_support = true
+  source                        = "../../"
+  external_dns_support          = true
+  enable_calico_network_polices = true
 }
 
 provider "kubernetes" {

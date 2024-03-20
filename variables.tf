@@ -30,19 +30,19 @@ variable "eks_users" {
 # EKS autoscaling
 variable "eks_autoscaling_group_linux_min_size" {
   description = "Minimum number of Linux nodes for the EKS."
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_linux_desired_capacity" {
   description = "Desired capacity for Linux nodes for the EKS."
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_linux_max_size" {
-  description = "Minimum number of Linux nodes for the EKS."
-  default     = 2
+  description = "Maximum number of Linux nodes for the EKS."
+  default     = 3
   type        = number
 }
 
@@ -55,25 +55,25 @@ variable "eks_linux_instance_type" {
 # EKS autoscaling for windows
 variable "eks_autoscaling_group_windows_min_size" {
   description = "Minimum number of Windows nodes for the EKS"
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_windows_desired_capacity" {
   description = "Desired capacity for Windows nodes for the EKS."
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_windows_max_size" {
   description = "Maximum number of Windows nodes for the EKS."
-  default     = 2
+  default     = 3
   type        = number
 }
 
 variable "eks_windows_instance_type" {
   description = "Instance size for EKS windows worker nodes."
-  default     = "m5.large"
+  default     = "t3.medium"
   type        = string
 }
 
@@ -111,6 +111,11 @@ variable "windows_ami_type" {
   description = "AMI type for the Windows Nodes."
   default     = "WINDOWS_CORE_2022_x86_64"
   type        = string
+}
+variable "enable_calico_network_polices" {
+  type        = bool
+  description = "Installs and enables calico for netowrk policies"
+  default     = false
 }
 
 variable "vpc_cidr_private_subnets" {

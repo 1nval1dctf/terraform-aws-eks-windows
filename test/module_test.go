@@ -2,7 +2,6 @@ package test
 
 import (
 	"crypto/tls"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -52,7 +51,7 @@ func NodeTest(t *testing.T, kubectlOptions *k8s.KubectlOptions) {
 	if err != nil {
 		t.Errorf("Error failed to get nodes: %v\n", err)
 	}
-	require.Equal(t, 2, len(nodes))
+	require.Equal(t, 4, len(nodes))
 }
 
 func Test(t *testing.T) {
@@ -63,6 +62,19 @@ func Test(t *testing.T) {
 	// At the end of the test, clean up any resources that were created
 	defer test_structure.RunTestStage(t, "teardown", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, fixtureFolder)
+
+		kubeConfig := terraform.Output(t, terraformOptions, "kubeconfig")
+		file, err := os.CreateTemp(os.TempDir(), "kubeconfig-")
+		require.NoError(t, err)
+		_, err = file.Write([]byte(kubeConfig))
+		require.NoError(t, err)
+
+		kubectlOptions := &k8s.KubectlOptions{ConfigPath: file.Name(), Namespace: "default"}
+		k8s.RunKubectl(t, kubectlOptions, "delete", "service/nginx")
+		k8s.RunKubectl(t, kubectlOptions, "delete", "service/windows")
+		t.Log("Waiting 30s to give time for load balancers to be removed")
+		time.Sleep(30 * time.Second)
+
 		terraform.Destroy(t, terraformOptions)
 	})
 
@@ -116,7 +128,7 @@ func Test(t *testing.T) {
 		terraformOptions := test_structure.LoadTerraformOptions(t, fixtureFolder)
 
 		kubeConfig := terraform.Output(t, terraformOptions, "kubeconfig")
-		file, err := ioutil.TempFile(os.TempDir(), "kubeconfig-")
+		file, err := os.CreateTemp(os.TempDir(), "kubeconfig-")
 		require.NoError(t, err)
 		//log.Printf(deQuoted)
 		_, err = file.Write([]byte(kubeConfig))
@@ -160,6 +172,14 @@ func Test(t *testing.T) {
 		_, err = k8s.GetServiceE(t, kubectlOptions, "windows")
 		if err != nil {
 			t.Errorf("Error failed to get windows service: %v\n", err)
+		}
+		t.Log("Waiting 60s to give test post time to run liveness checks")
+		time.Sleep(60 * time.Second)
+
+		// if the liveness prove fails then the pod restarts. So for this test if restart ocunt is 0 then network policies are working.
+		test_netpol_pods := k8s.ListPods(t, kubectlOptions, metav1.ListOptions{LabelSelector: "networkIsolation=no_ingress_egress"})
+		for key := range test_netpol_pods {
+			require.Zero(t, test_netpol_pods[key].Status.ContainerStatuses[0].RestartCount)
 		}
 
 	})
