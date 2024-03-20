@@ -2,6 +2,7 @@ variable "eks_cluster_name" {
   type        = string
   description = "EKS Cluster name"
 }
+
 variable "eks_cluster_oicd_provider_arn" {
   type        = string
   description = "EKS OICD Provider arn"
@@ -53,4 +54,16 @@ variable "vpc_id" {
   type        = string
   description = "Id for the VPC for CTFd"
   default     = null
+}
+
+variable "coredns_addon" {
+  description = "EKS cluster coreDNS addon"
+}
+
+variable "vpc_cni_addon" {
+  description = "EKS cluster vpc-cni addon"
+}
+
+variable "kube_proxy_addon" {
+  description = "EKS cluster kube_proxy addon"
 }

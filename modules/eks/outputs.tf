@@ -35,3 +35,18 @@ output "kubeconfig" {
   value       = local.kubeconfig
   description = "kubeconfig for the AWS EKS cluster"
 }
+
+output "kube_proxy_addon" {
+  value       = lookup(module.eks.cluster_addons, "kube-proxy")
+  description = "Attribute maps for  EKS cluster kube_proxy addon"
+}
+
+output "coredns_addon" {
+  value       = lookup(module.eks.cluster_addons, "coredns")
+  description = "Attribute maps for  EKS cluster coreDNS addon"
+}
+
+output "vpc_cni_addon" {
+  value       = lookup(module.eks.cluster_addons, "vpc-cni")
+  description = "Attribute maps for  EKS cluster VPC CNI addon"
+}

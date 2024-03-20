@@ -55,6 +55,10 @@ module "eks_extras" {
   enable_cloudwatch_exported    = var.enable_cloudwatch_exported
   enable_loadbalancer_controler = var.enable_loadbalancer_controler
   eks_cluster_oicd_provider_arn = module.eks.cluster_oicd_provider_arn
+  coredns_addon                 = module.eks.coredns_addon
+  vpc_cni_addon                 = module.eks.vpc_cni_addon
+  kube_proxy_addon              = module.eks.kube_proxy_addon
+
   depends_on = [
     module.eks,
     module.vpc

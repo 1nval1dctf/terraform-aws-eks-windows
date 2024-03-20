@@ -366,12 +366,21 @@ resource "kubernetes_service_account_v1" "aws_lb" {
     labels = {
       "app.kubernetes.io/component" = "controller"
       "app.kubernetes.io/name"      = local.lbcontroller_service_account_name
+      # adding these to create explicit dependencies on these addons
+      "kube_proxy_version" = var.kube_proxy_addon.addon_version
+      "coredns_version"    = var.coredns_addon.addon_version
+      "vpc_cni_version"    = var.vpc_cni_addon.addon_version
     }
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.aws_lb[0].arn
     }
   }
   automount_service_account_token = true
+
+  depends_on = [
+    var.windows_node_group_iam_role,
+    var.linux_node_group_iam_role,
+  ]
 }
 resource "kubernetes_cluster_role" "aws_lb" {
   count = var.enable_loadbalancer_controler ? 1 : 0
@@ -437,5 +446,8 @@ resource "helm_release" "aws_lb" {
     name  = "vpcId"
     value = var.vpc_id
   }
-
+  depends_on = [
+    var.kube_proxy_addon,
+    var.coredns_addon
+  ]
 }
