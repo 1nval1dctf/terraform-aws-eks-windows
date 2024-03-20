@@ -3,14 +3,14 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.37.0"
+      version = ">= 5.38"
     }
   }
 }
 
 module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
-  version                        = "20.2.1"
+  version                        = "20.4.0"
   cluster_name                   = var.eks_cluster_name
   cluster_version                = var.eks_cluster_version
   subnet_ids                     = concat(var.private_subnet_ids, var.public_subnet_ids)
@@ -31,7 +31,7 @@ module "eks" {
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
 
-      instance_types = [var.eks_instance_type]
+      instance_types = [var.eks_linux_instance_type]
       min_size       = var.eks_autoscaling_group_linux_min_size
       max_size       = var.eks_autoscaling_group_linux_max_size
       desired_size   = var.eks_autoscaling_group_linux_desired_capacity
@@ -45,7 +45,7 @@ module "eks" {
         "k8s.io/cluster-autoscaler/enabled"                 = "true",
         "k8s.io/cluster-autoscaler/${var.eks_cluster_name}" = "owned"
       }
-      instance_types = [var.eks_instance_type]
+      instance_types = [var.eks_windows_instance_type]
       min_size       = var.eks_autoscaling_group_windows_min_size
       max_size       = var.eks_autoscaling_group_windows_max_size
       desired_size   = var.eks_autoscaling_group_windows_desired_capacity
@@ -75,9 +75,29 @@ resource "aws_eks_access_entry" "user_access" {
     for index, user in var.eks_users :
     user.username => user
   }
-  cluster_name      = var.eks_cluster_name
+  cluster_name      = module.eks.cluster_name
   principal_arn     = each.value.userarn
   kubernetes_groups = each.value.groups
   type              = "STANDARD"
   user_name         = each.value.username
+}
+
+resource "aws_eks_access_policy_association" "user_access_policy_association" {
+
+  for_each = {
+    for index, user in var.eks_users :
+    user.username => user
+  }
+  access_scope {
+    type = "cluster"
+  }
+
+  cluster_name = module.eks.cluster_name
+
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = each.value.userarn
+
+  depends_on = [
+    aws_eks_access_entry.user_access,
+  ]
 }

@@ -30,23 +30,23 @@ variable "eks_users" {
 # EKS autoscaling
 variable "eks_autoscaling_group_linux_min_size" {
   description = "Minimum number of Linux nodes for the EKS."
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_linux_desired_capacity" {
   description = "Desired capacity for Linux nodes for the EKS."
-  default     = 1
-  type        = number
-}
-
-variable "eks_autoscaling_group_linux_max_size" {
-  description = "Minimum number of Linux nodes for the EKS."
   default     = 2
   type        = number
 }
 
-variable "eks_instance_type" {
+variable "eks_autoscaling_group_linux_max_size" {
+  description = "Maximum number of Linux nodes for the EKS."
+  default     = 3
+  type        = number
+}
+
+variable "eks_linux_instance_type" {
   description = "Instance size for EKS worker nodes."
   default     = "m5.large"
   type        = string
@@ -55,25 +55,31 @@ variable "eks_instance_type" {
 # EKS autoscaling for windows
 variable "eks_autoscaling_group_windows_min_size" {
   description = "Minimum number of Windows nodes for the EKS"
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_windows_desired_capacity" {
   description = "Desired capacity for Windows nodes for the EKS."
-  default     = 1
+  default     = 2
   type        = number
 }
 
 variable "eks_autoscaling_group_windows_max_size" {
   description = "Maximum number of Windows nodes for the EKS."
-  default     = 2
+  default     = 3
   type        = number
+}
+
+variable "eks_windows_instance_type" {
+  description = "Instance size for EKS windows worker nodes."
+  default     = "t3.medium"
+  type        = string
 }
 
 variable "external_dns_support" {
   type        = bool
-  description = "Setup IAM, service accoutn and cluster role for external_dns in EKS"
+  description = "Setup IAM, service accounts and cluster role for external_dns in EKS"
   default     = false
 }
 
@@ -105,4 +111,22 @@ variable "windows_ami_type" {
   description = "AMI type for the Windows Nodes."
   default     = "WINDOWS_CORE_2022_x86_64"
   type        = string
+}
+variable "enable_calico_network_polices" {
+  type        = bool
+  description = "Installs and enables calico for netowrk policies"
+  default     = false
+}
+
+variable "vpc_cidr_private_subnets" {
+  type        = list(string)
+  description = "private subnets in the main CIDR block for the VPC."
+  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+}
+
+
+variable "vpc_cidr_public_subnets" {
+  type        = list(string)
+  description = "private subnets in the main CIDR block for the VPC."
+  default     = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 }
