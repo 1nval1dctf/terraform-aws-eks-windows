@@ -48,6 +48,8 @@ No providers.
 | <a name="output_eks_cluster_endpoint"></a> [eks\_cluster\_endpoint](#output\_eks\_cluster\_endpoint) | EKS cluster endpoint |
 | <a name="output_eks_cluster_name"></a> [eks\_cluster\_name](#output\_eks\_cluster\_name) | EKS cluster ID |
 | <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | kubeconfig for the AWS EKS cluster |
+| <a name="output_load_balancer_controller_helm_release_version"></a> [load\_balancer\_controller\_helm\_release\_version](#output\_load\_balancer\_controller\_helm\_release\_version) | Load Balancer controller helm release version. Depend on this in your kubernetes deployments if you use services with load balacers and want to be able to destroy from a single terraform deploymemt |
+| <a name="output_network_polices_enabled"></a> [network\_polices\_enabled](#output\_network\_polices\_enabled) | Denotes if network policies where enabled |
 | <a name="output_private_subnet_ids"></a> [private\_subnet\_ids](#output\_private\_subnet\_ids) | List of private subnets that contain backend infrastructure (RDS, ElastiCache, EC2) |
 | <a name="output_public_subnet_ids"></a> [public\_subnet\_ids](#output\_public\_subnet\_ids) | List of public subnets that contain frontend infrastructure (ALB) |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | Id for the VPC created for CTFd |

@@ -68,12 +68,9 @@ resource "kubernetes_deployment" "nginx" {
               path = "/"
               port = 80
             }
-          }
-          readiness_probe {
-            http_get {
-              path = "/"
-              port = 80
-            }
+            initial_delay_seconds = 10
+            period_seconds        = 20
+            timeout_seconds       = 5
           }
 
           resources {
@@ -115,6 +112,7 @@ resource "kubernetes_service" "nginx" {
     type                = "LoadBalancer"
     load_balancer_class = "service.k8s.aws/nlb"
   }
+  depends_on = [module.test.load_balancer_controller_helm_release_version]
 }
 
 resource "kubernetes_deployment" "windows" {
@@ -150,13 +148,9 @@ resource "kubernetes_deployment" "windows" {
               path = "/"
               port = 80
             }
-          }
-
-          readiness_probe {
-            http_get {
-              path = "/"
-              port = 80
-            }
+            initial_delay_seconds = 10
+            period_seconds        = 20
+            timeout_seconds       = 5
           }
 
           resources {
@@ -210,4 +204,6 @@ resource "kubernetes_service" "windows" {
     type                = "LoadBalancer"
     load_balancer_class = "service.k8s.aws/nlb"
   }
+
+  depends_on = [module.test.load_balancer_controller_helm_release_version]
 }
