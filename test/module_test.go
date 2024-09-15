@@ -173,10 +173,10 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error failed to get windows service: %v\n", err)
 		}
-		t.Log("Waiting 60s to give test post time to run liveness checks")
-		time.Sleep(60 * time.Second)
+		t.Log("Waiting 120s to give test post time to run liveness checks")
+		time.Sleep(120 * time.Second)
 
-		// if the liveness prove fails then the pod restarts. So for this test if restart ocunt is 0 then network policies are working.
+		// if the liveness prove fails then the pod restarts. So for this test if restart count is 0 then network policies are working.
 		test_netpol_pods := k8s.ListPods(t, kubectlOptions, metav1.ListOptions{LabelSelector: "networkIsolation=no_ingress_egress"})
 		for key := range test_netpol_pods {
 			require.Zero(t, test_netpol_pods[key].Status.ContainerStatuses[0].RestartCount)
