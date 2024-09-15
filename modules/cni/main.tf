@@ -77,7 +77,7 @@ resource "helm_release" "calico" {
   chart      = "tigera-operator"
   name       = "calico"
   namespace  = kubernetes_namespace_v1.calico[0].metadata[0].name
-  version    = "3.27.2"
+  version    = "3.28.1"
 
   set {
     name  = "installation.kubernetesProvider"
@@ -91,28 +91,6 @@ resource "helm_release" "calico" {
     kubectl patch installation default --type merge --patch='{"spec": {"serviceCIDRs": ["${data.aws_eks_cluster.eks.kubernetes_network_config[0].service_ipv4_cidr}"], "calicoNetwork": {"windowsDataplane": "HNS"}}}'  --kubeconfig ${local_file.kube_config.filename}
     EOT
     on_failure  = continue
-  }
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = <<EOT
-    kubectl patch clusterrole tigera-operator --type='json' -p='[{"op": "add", "path": "/rules/0", "value":{ "apiGroups": ["operator.tigera.io"], "resources": ["installations", "apiservers"], "verbs": ["delete"]}}]' --kubeconfig ${local.kubeconfig_filename};
-    EOT
-  }
-  # uninstall fails but if we queue up a delete for the installation and then remove the finalizers it will progress.
-  provisioner "local-exec" {
-    when        = destroy
-    interpreter = ["/bin/bash", "-c"]
-    command     = <<EOT
-    KUBECONFIG=${path.module}/.kubeconfig kubectl delete installation default --timeout=30s
-    EOT
-    on_failure  = continue
-  }
-  provisioner "local-exec" {
-    when        = destroy
-    interpreter = ["/bin/bash", "-c"]
-    command     = <<EOT
-    KUBECONFIG=${path.module}/.kubeconfig kubectl patch installation default --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]'
-    EOT
   }
 }
 
