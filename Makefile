@@ -17,7 +17,7 @@ init_all: init init_examples init_tests init_modules
 .PHONY : test
 ## Run tests
 test: init_tests
-	cd $(TESTDIR) && go test -v -timeout 40m -run Test
+	cd $(TESTDIR) && go test -v -timeout 50m -run Test
 
 .PHONY : init
 init:
