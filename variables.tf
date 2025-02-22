@@ -13,7 +13,7 @@ variable "aws_region" {
 variable "eks_cluster_version" {
   type        = string
   description = "Kubernetes version for the EKS cluster"
-  default     = "1.29"
+  default     = "1.32"
 }
 
 variable "eks_users" {
@@ -66,7 +66,7 @@ variable "eks_autoscaling_group_windows_desired_capacity" {
 }
 
 variable "eks_autoscaling_group_windows_max_size" {
-  description = "Maximum number of Windows nodes for the EKS."
+  description = "Maximum number of Windows nodes for the EKS. Set to 0 to disable windows nodes"
   default     = 3
   type        = number
 }
