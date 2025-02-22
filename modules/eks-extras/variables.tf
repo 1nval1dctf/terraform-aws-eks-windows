@@ -20,9 +20,15 @@ variable "windows_node_group_iam_role" {
   default     = null
 }
 
+variable "windows_support" {
+  type        = bool
+  description = "Add support for windows"
+  default     = true
+}
+
 variable "external_dns_support" {
   type        = bool
-  description = "Setup IAM, service accoutn and cluster role for external_dns in EKS"
+  description = "Setup IAM, service account and cluster role for external_dns in EKS"
   default     = false
 }
 

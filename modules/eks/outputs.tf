@@ -28,7 +28,7 @@ output "linux_node_group_iam_role" {
 
 output "windows_node_group_iam_role" {
   description = "IAM role name for windows EKS managed node group"
-  value       = module.eks.eks_managed_node_groups["windows"].iam_role_name
+  value       = var.eks_autoscaling_group_windows_max_size > 0 ? module.eks.eks_managed_node_groups["windows"].iam_role_name : null
 }
 
 output "kubeconfig" {

@@ -36,7 +36,7 @@ resource "aws_iam_role_policy_attachment" "linux_node_group_dns" {
 }
 
 resource "aws_iam_role_policy_attachment" "windows_node_group_dns" {
-  count      = var.external_dns_support ? 1 : 0
+  count      = var.external_dns_support ? var.windows_support ? 1 : 0 : 0
   policy_arn = aws_iam_policy.route53_change_records[0].arn
   role       = var.windows_node_group_iam_role
 }

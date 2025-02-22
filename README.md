@@ -10,9 +10,9 @@ Terraform module to deploy EKS with Windows support
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.38 |
-| <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.12.1 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.26.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.88 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.17.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.35.1 |
 ## Providers
 
 No providers.
@@ -25,10 +25,10 @@ No providers.
 | <a name="input_eks_autoscaling_group_linux_max_size"></a> [eks\_autoscaling\_group\_linux\_max\_size](#input\_eks\_autoscaling\_group\_linux\_max\_size) | Maximum number of Linux nodes for the EKS. | `number` | `3` | no |
 | <a name="input_eks_autoscaling_group_linux_min_size"></a> [eks\_autoscaling\_group\_linux\_min\_size](#input\_eks\_autoscaling\_group\_linux\_min\_size) | Minimum number of Linux nodes for the EKS. | `number` | `2` | no |
 | <a name="input_eks_autoscaling_group_windows_desired_capacity"></a> [eks\_autoscaling\_group\_windows\_desired\_capacity](#input\_eks\_autoscaling\_group\_windows\_desired\_capacity) | Desired capacity for Windows nodes for the EKS. | `number` | `2` | no |
-| <a name="input_eks_autoscaling_group_windows_max_size"></a> [eks\_autoscaling\_group\_windows\_max\_size](#input\_eks\_autoscaling\_group\_windows\_max\_size) | Maximum number of Windows nodes for the EKS. | `number` | `3` | no |
+| <a name="input_eks_autoscaling_group_windows_max_size"></a> [eks\_autoscaling\_group\_windows\_max\_size](#input\_eks\_autoscaling\_group\_windows\_max\_size) | Maximum number of Windows nodes for the EKS. Set to 0 to disable windows nodes | `number` | `3` | no |
 | <a name="input_eks_autoscaling_group_windows_min_size"></a> [eks\_autoscaling\_group\_windows\_min\_size](#input\_eks\_autoscaling\_group\_windows\_min\_size) | Minimum number of Windows nodes for the EKS | `number` | `2` | no |
 | <a name="input_eks_cluster_name"></a> [eks\_cluster\_name](#input\_eks\_cluster\_name) | Name for the EKS Cluster | `string` | `"eks"` | no |
-| <a name="input_eks_cluster_version"></a> [eks\_cluster\_version](#input\_eks\_cluster\_version) | Kubernetes version for the EKS cluster | `string` | `"1.29"` | no |
+| <a name="input_eks_cluster_version"></a> [eks\_cluster\_version](#input\_eks\_cluster\_version) | Kubernetes version for the EKS cluster | `string` | `"1.32"` | no |
 | <a name="input_eks_linux_instance_type"></a> [eks\_linux\_instance\_type](#input\_eks\_linux\_instance\_type) | Instance size for EKS worker nodes. | `string` | `"m5.large"` | no |
 | <a name="input_eks_users"></a> [eks\_users](#input\_eks\_users) | Additional AWS users to add to the EKS aws-auth configmap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_eks_windows_instance_type"></a> [eks\_windows\_instance\_type](#input\_eks\_windows\_instance\_type) | Instance size for EKS windows worker nodes. | `string` | `"t3.medium"` | no |
@@ -64,17 +64,125 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.38"
+      version = ">= 5.88"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.35.1"
     }
   }
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
+}
+
+provider "kubernetes" {
+
+  host                   = module.eks_windows.eks_cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks_windows.eks_cluster_certificate_authority_data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    # This requires the awscli to be installed locally where Terraform is executed
+    args = ["eks", "get-token", "--cluster-name", module.eks_windows.eks_cluster_name]
+  }
 }
 
 module "eks_windows" {
-  source = "../../" # Actually set to "1nval1dctf/eks-windows/aws"
+  source                                         = "../../" # Actually set to "1nval1dctf/eks-windows/aws"
+  eks_autoscaling_group_linux_max_size           = 2
+  eks_autoscaling_group_windows_min_size         = 0
+  eks_autoscaling_group_windows_desired_capacity = 0
+  eks_autoscaling_group_windows_max_size         = 0
+  enable_metrics_server                          = false
+  enable_cluster_autoscaler                      = false
+  enable_cloudwatch_exported                     = false
+  external_dns_support                           = true
+  aws_region                                     = var.aws_region
+}
+
+
+resource "kubernetes_deployment" "nginx" {
+  metadata {
+    name = "nginx"
+    labels = {
+      app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "nginx"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "nginx"
+        }
+      }
+      spec {
+        container {
+          image             = "nginx:latest"
+          name              = "nginx"
+          image_pull_policy = "Always"
+
+          port {
+            container_port = 80
+          }
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = 80
+            }
+            initial_delay_seconds = 10
+            period_seconds        = 20
+            timeout_seconds       = 5
+          }
+
+          resources {
+            limits = {
+              cpu    = "0.5"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "50Mi"
+            }
+          }
+        }
+        node_selector = {
+          "kubernetes.io/os"   = "linux"
+          "kubernetes.io/arch" = "amd64"
+        }
+      }
+    }
+  }
+}
+resource "kubernetes_service" "nginx" {
+  metadata {
+    name = "nginx"
+    annotations = {
+      "service.beta.kubernetes.io/aws-load-balancer-type"            = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type" = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"          = "internet-facing"
+    }
+  }
+  spec {
+    selector = {
+      app = kubernetes_deployment.nginx.spec[0].template[0].metadata[0].labels.app
+    }
+    port {
+      port        = 80
+      target_port = 80
+    }
+    type                = "LoadBalancer"
+    load_balancer_class = "service.k8s.aws/nlb"
+  }
+  depends_on = [module.eks_windows.load_balancer_controller_helm_release_version]
 }
 ```
 
