@@ -1,4 +1,8 @@
 # policy for cluster-ausoscaler to be able to scale new worker nodes.
+locals {
+  cluster_autoscaler_sa_name = "cluster-autoscaler"
+  cluster_autoscaler_namespace = "kube-system"
+}
 
 #tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "cluster_autoscaler" {
@@ -14,8 +18,11 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "autoscaling:DescribeLaunchConfigurations",
       "autoscaling:DescribeScalingActivities",
       "autoscaling:DescribeTags",
+      "ec2:DescribeImages",
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeLaunchTemplateVersions",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DescribeNodegroup"
     ]
 
     resources = ["*"]
@@ -27,10 +34,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
 
     actions = [
       "autoscaling:SetDesiredCapacity",
-      "autoscaling:TerminateInstanceInAutoScalingGroup",
-      "ec2:DescribeImages",
-      "ec2:GetInstanceTypesFromInstanceRequirements",
-      "eks:DescribeNodegroup"
+      "autoscaling:TerminateInstanceInAutoScalingGroup"
     ]
 
     resources = ["*"]
@@ -50,16 +54,72 @@ resource "aws_iam_policy" "cluster_autoscaler" {
   policy      = data.aws_iam_policy_document.cluster_autoscaler[0].json
 }
 
-resource "aws_iam_role_policy_attachment" "linux_node_group_cluster_autoscaler" {
-  count      = var.enable_cluster_autoscaler ? 1 : 0
-  policy_arn = aws_iam_policy.cluster_autoscaler[0].arn
-  role       = var.linux_node_group_iam_role
+data "aws_iam_policy_document" "eks_cluster_autoscaler_assume_role" {
+  count = var.enable_cluster_autoscaler ? 1 : 0
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(data.aws_eks_cluster.selected.identity[0].oidc[0].issuer, "https://", "")}:sub"
+      values = [
+        "system:serviceaccount:${local.cluster_autoscaler_namespace}:${local.cluster_autoscaler_sa_name}"
+      ]
+    }
+    principals {
+      identifiers = [
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(data.aws_eks_cluster.selected.identity[0].oidc[0].issuer, "https://", "")}"
+      ]
+      type = "Federated"
+    }
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "windows_node_group_cluster_autoscaler" {
+resource "aws_iam_role" "cluster_autoscaler" {
+  count       = var.enable_cluster_autoscaler ? 1 : 0
+  name        = local.cluster_autoscaler_sa_name
+  description = "Permissions required by cluster_autoscaler to do it's job."
+
+
+  force_detach_policies = true
+
+  assume_role_policy = data.aws_iam_policy_document.eks_cluster_autoscaler_assume_role[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
   count      = var.enable_cluster_autoscaler ? 1 : 0
   policy_arn = aws_iam_policy.cluster_autoscaler[0].arn
-  role       = var.windows_node_group_iam_role
+  role       = aws_iam_role.cluster_autoscaler[0].name
+}
+
+resource "kubernetes_service_account" "cluster_autoscaler" {
+  count    = var.enable_cluster_autoscaler ? 1 : 0
+  provider = kubernetes
+  metadata {
+    name = local.cluster_autoscaler_sa_name
+    namespace  = local.cluster_autoscaler_namespace
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler[0].arn
+    }
+  }
+  automount_service_account_token = "true"
+}
+
+resource "kubernetes_cluster_role_binding" "cluster_autoscaler" {
+  count = var.enable_cluster_autoscaler ? 1 : 0
+  metadata {
+    name = "cluster_autoscaler"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-autoscaler-aws-cluster-autoscaler"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.cluster_autoscaler[0].metadata[0].name
+    namespace = local.cluster_autoscaler_namespace
+  }
 }
 
 
@@ -68,7 +128,7 @@ resource "helm_release" "cluster_autoscaler" {
   name       = "cluster-autoscaler"
   chart      = "cluster-autoscaler"
   repository = "https://kubernetes.github.io/autoscaler"
-  namespace  = "kube-system"
+  namespace  = local.cluster_autoscaler_namespace
 
   set {
     name  = "autoDiscovery.enabled"
@@ -89,6 +149,14 @@ resource "helm_release" "cluster_autoscaler" {
   set {
     name  = "rbac.create"
     value = "true"
+  }
+  set {
+    name  = "rbac.serviceAccount.create"
+    value = "false"
+  }
+  set {
+    name  = "rbac.serviceAccount.name"
+    value = local.cluster_autoscaler_sa_name
   }
   set {
     name  = "nodeSelector.kubernetes\\.io/os"
