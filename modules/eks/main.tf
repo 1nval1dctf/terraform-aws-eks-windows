@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.88"
+      version = "6.17.0"
     }
   }
 }
@@ -46,19 +46,19 @@ locals {
   eks_managed_node_groups = [local.eks_managed_node_groups_both, local.eks_managed_node_groups_linux][var.eks_autoscaling_group_windows_max_size > 0 ? 0 : 1]
 }
 module "eks" {
-  source                         = "terraform-aws-modules/eks/aws"
-  version                        = "20.33.1"
-  cluster_name                   = var.eks_cluster_name
-  cluster_version                = var.eks_cluster_version
-  subnet_ids                     = concat(var.private_subnet_ids, var.public_subnet_ids)
-  vpc_id                         = var.vpc_id
-  cluster_endpoint_public_access = true
+  source                 = "terraform-aws-modules/eks/aws"
+  version                = "21.6.1"
+  name                   = var.eks_cluster_name
+  kubernetes_version     = var.eks_cluster_version
+  subnet_ids             = concat(var.private_subnet_ids, var.public_subnet_ids)
+  vpc_id                 = var.vpc_id
+  endpoint_public_access = true
 
   # Give the Terraform identity admin access to the cluster
   # which will allow resources to be deployed into the cluster
   enable_cluster_creator_admin_permissions = true
   eks_managed_node_groups                  = local.eks_managed_node_groups
-  cluster_addons = {
+  addons = {
     kube-proxy = {
       most_recent = true
     }
@@ -68,8 +68,9 @@ module "eks" {
     coredns = {
       most_recent = true
     }
+    eks-pod-identity-agent = {}
   }
-  cluster_enabled_log_types = [
+  enabled_log_types = [
     "api",
     "audit",
     "authenticator",

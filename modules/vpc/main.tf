@@ -14,7 +14,7 @@ data "aws_availability_zones" "available" {}
 # Create a VPC to launch our instances into
 module "vpc" {
   source                               = "terraform-aws-modules/vpc/aws"
-  version                              = "5.19.0"
+  version                              = "6.4.1"
   name                                 = "${var.eks_cluster_name}-vpc"
   cidr                                 = var.vpc_cidr_block
   azs                                  = data.aws_availability_zones.available.names

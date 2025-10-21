@@ -1,6 +1,6 @@
 # policy for cluster-ausoscaler to be able to scale new worker nodes.
 locals {
-  cluster_autoscaler_sa_name = "cluster-autoscaler"
+  cluster_autoscaler_sa_name   = "cluster-autoscaler"
   cluster_autoscaler_namespace = "kube-system"
 }
 
@@ -96,8 +96,8 @@ resource "kubernetes_service_account" "cluster_autoscaler" {
   count    = var.enable_cluster_autoscaler ? 1 : 0
   provider = kubernetes
   metadata {
-    name = local.cluster_autoscaler_sa_name
-    namespace  = local.cluster_autoscaler_namespace
+    name      = local.cluster_autoscaler_sa_name
+    namespace = local.cluster_autoscaler_namespace
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler[0].arn
     }
@@ -144,7 +144,7 @@ resource "helm_release" "cluster_autoscaler" {
   }
   set {
     name  = "awsRegion"
-    value = data.aws_region.current.name
+    value = data.aws_region.current.region
   }
   set {
     name  = "rbac.create"

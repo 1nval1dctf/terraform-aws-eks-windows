@@ -10,9 +10,9 @@ Terraform module to deploy EKS with Windows support
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.88 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 6.17.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.17.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.35.1 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.38.0 |
 ## Providers
 
 No providers.
@@ -30,7 +30,7 @@ No providers.
 | <a name="input_eks_cluster_name"></a> [eks\_cluster\_name](#input\_eks\_cluster\_name) | Name for the EKS Cluster | `string` | `"eks"` | no |
 | <a name="input_eks_cluster_version"></a> [eks\_cluster\_version](#input\_eks\_cluster\_version) | Kubernetes version for the EKS cluster | `string` | `"1.32"` | no |
 | <a name="input_eks_linux_instance_type"></a> [eks\_linux\_instance\_type](#input\_eks\_linux\_instance\_type) | Instance size for EKS worker nodes. | `string` | `"m5.large"` | no |
-| <a name="input_eks_users"></a> [eks\_users](#input\_eks\_users) | Additional AWS users to add to the EKS aws-auth configmap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
+| <a name="input_eks_users"></a> [eks\_users](#input\_eks\_users) | Additional AWS users to add to the EKS aws-auth configmap. | <pre>list(object({<br/>    userarn  = string<br/>    username = string<br/>    groups   = list(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_eks_windows_instance_type"></a> [eks\_windows\_instance\_type](#input\_eks\_windows\_instance\_type) | Instance size for EKS windows worker nodes. | `string` | `"t3.medium"` | no |
 | <a name="input_enable_calico_network_polices"></a> [enable\_calico\_network\_polices](#input\_enable\_calico\_network\_polices) | Installs and enables calico for netowrk policies | `bool` | `false` | no |
 | <a name="input_enable_cloudwatch_exported"></a> [enable\_cloudwatch\_exported](#input\_enable\_cloudwatch\_exported) | Enable cloudwatch exporter | `bool` | `true` | no |
@@ -38,8 +38,8 @@ No providers.
 | <a name="input_enable_loadbalancer_controler"></a> [enable\_loadbalancer\_controler](#input\_enable\_loadbalancer\_controler) | Enable ALB load Balancer controller | `bool` | `true` | no |
 | <a name="input_enable_metrics_server"></a> [enable\_metrics\_server](#input\_enable\_metrics\_server) | Install metrics server into the cluster | `bool` | `true` | no |
 | <a name="input_external_dns_support"></a> [external\_dns\_support](#input\_external\_dns\_support) | Setup IAM, service accounts and cluster role for external\_dns in EKS | `bool` | `false` | no |
-| <a name="input_vpc_cidr_private_subnets"></a> [vpc\_cidr\_private\_subnets](#input\_vpc\_cidr\_private\_subnets) | private subnets in the main CIDR block for the VPC. | `list(string)` | <pre>[<br>  "10.0.1.0/24",<br>  "10.0.2.0/24",<br>  "10.0.3.0/24"<br>]</pre> | no |
-| <a name="input_vpc_cidr_public_subnets"></a> [vpc\_cidr\_public\_subnets](#input\_vpc\_cidr\_public\_subnets) | private subnets in the main CIDR block for the VPC. | `list(string)` | <pre>[<br>  "10.0.4.0/24",<br>  "10.0.5.0/24",<br>  "10.0.6.0/24"<br>]</pre> | no |
+| <a name="input_vpc_cidr_private_subnets"></a> [vpc\_cidr\_private\_subnets](#input\_vpc\_cidr\_private\_subnets) | private subnets in the main CIDR block for the VPC. | `list(string)` | <pre>[<br/>  "10.0.1.0/24",<br/>  "10.0.2.0/24",<br/>  "10.0.3.0/24"<br/>]</pre> | no |
+| <a name="input_vpc_cidr_public_subnets"></a> [vpc\_cidr\_public\_subnets](#input\_vpc\_cidr\_public\_subnets) | private subnets in the main CIDR block for the VPC. | `list(string)` | <pre>[<br/>  "10.0.4.0/24",<br/>  "10.0.5.0/24",<br/>  "10.0.6.0/24"<br/>]</pre> | no |
 | <a name="input_windows_ami_type"></a> [windows\_ami\_type](#input\_windows\_ami\_type) | AMI type for the Windows Nodes. | `string` | `"WINDOWS_CORE_2022_x86_64"` | no |
 ## Outputs
 

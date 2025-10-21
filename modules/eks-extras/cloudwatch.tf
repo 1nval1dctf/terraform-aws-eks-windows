@@ -62,7 +62,7 @@ resource "helm_release" "fluent_bit_daemonset" {
   }
   set {
     name  = "config.outputs"
-    value = templatefile("${path.module}/templates/output.conf", { aws_region = data.aws_region.current.name })
+    value = templatefile("${path.module}/templates/output.conf", { aws_region = data.aws_region.current.region })
   }
   set {
     name  = "config.parsers"

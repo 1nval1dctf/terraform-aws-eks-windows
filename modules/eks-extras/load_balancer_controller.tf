@@ -446,7 +446,7 @@ resource "helm_release" "aws_lb" {
   }
   set {
     name  = "region"
-    value = data.aws_region.current.name
+    value = data.aws_region.current.region
   }
   set {
     name  = "vpcId"
