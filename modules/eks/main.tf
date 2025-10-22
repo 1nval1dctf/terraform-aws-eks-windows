@@ -64,11 +64,14 @@ module "eks" {
     }
     vpc-cni = {
       most_recent = true
+      before_compute = true
     }
     coredns = {
       most_recent = true
     }
-    eks-pod-identity-agent = {}
+    eks-pod-identity-agent = {
+      before_compute = true
+    }
   }
   enabled_log_types = [
     "api",
